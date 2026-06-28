@@ -1,6 +1,6 @@
 import { ColetaRepository } from '../repositories/coletaRepository';
 import { PedidoRepository } from '../../pedidos/repositories/pedidoRepository';
-import { ParticipanteSchema, ParticipanteInput, Participante, ResumoPedido, TamanhosValidos, Tamanho } from '../types';
+import { ParticipanteSchema, ParticipanteInput, Participante, ResumoPedido, TamanhosValidos, Tamanho, TamanhosShortsValidos, TamanhoShort } from '../types';
 
 export class ColetaService {
   private repository = new ColetaRepository();
@@ -101,18 +101,17 @@ export class ColetaService {
     }, {} as Record<Tamanho, number>);
 
     // Inicializar mapa de contagem para todos os tamanhos válidos (Shorts)
-    const shortCounts = TamanhosValidos.reduce((acc, tamanho) => {
+    const shortCounts = TamanhosShortsValidos.reduce((acc, tamanho) => {
       acc[tamanho] = 0;
       return acc;
-    }, {} as Record<Tamanho, number>);
+    }, {} as Record<TamanhoShort, number>);
 
-    // Contar ocorrencias
     for (const p of participants) {
       if (TamanhosValidos.includes(p.tamanho as Tamanho)) {
         counts[p.tamanho as Tamanho]++;
       }
-      if (p.tamanhoShort && TamanhosValidos.includes(p.tamanhoShort as Tamanho)) {
-        shortCounts[p.tamanhoShort as Tamanho]++;
+      if (p.tamanhoShort && TamanhosShortsValidos.includes(p.tamanhoShort as TamanhoShort)) {
+        shortCounts[p.tamanhoShort as TamanhoShort]++;
       }
     }
 
@@ -122,7 +121,7 @@ export class ColetaService {
       quantidade: counts[tamanho],
     }));
 
-    const totalPorTamanhoShort = TamanhosValidos.map((tamanho) => ({
+    const totalPorTamanhoShort = TamanhosShortsValidos.map((tamanho) => ({
       tamanho,
       quantidade: shortCounts[tamanho],
     }));

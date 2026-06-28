@@ -46,7 +46,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ParticipanteSchema, ParticipanteInput, Participante, TamanhosValidos, ResumoPedido } from '@/features/coleta/types';
+import { ParticipanteSchema, ParticipanteInput, Participante, TamanhosValidos, TamanhosShortsValidos, ResumoPedido } from '@/features/coleta/types';
 import { Pedido, PedidoStatus } from '@/features/pedidos/types';
 
 export default function PedidoDetailPage() {
@@ -113,7 +113,7 @@ export default function PedidoDetailPage() {
             return acc;
           }, {} as Record<string, number>);
 
-          const initialShorts = TamanhosValidos.reduce((acc, size) => {
+          const initialShorts = TamanhosShortsValidos.reduce((acc, size) => {
             acc[size] = 0;
             return acc;
           }, {} as Record<string, number>);
@@ -544,7 +544,7 @@ export default function PedidoDetailPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {TamanhosValidos.map((size) => {
+                    {TamanhosShortsValidos.map((size) => {
                       const qty = resumo?.totalPorTamanhoShort?.find((t) => t.tamanho === size)?.quantidade || 0;
                       if (qty === 0) return null;
                       return (
@@ -848,7 +848,7 @@ export default function PedidoDetailPage() {
                   <div className="space-y-4">
                     <h3 className="text-sm font-extrabold text-sky-505 uppercase tracking-wider border-b pb-2">Shorts</h3>
                     <div className="grid grid-cols-2 gap-3">
-                      {TamanhosValidos.map((size) => (
+                      {TamanhosShortsValidos.map((size) => (
                         <div key={`edit-short-${size}`} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 dark:border-slate-900">
                           <span className="font-bold text-slate-700 dark:text-slate-350">{size}</span>
                           <Input
@@ -1107,7 +1107,7 @@ export default function PedidoDetailPage() {
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg max-h-56 overflow-y-auto">
-                    {TamanhosValidos.map((size) => (
+                    {TamanhosShortsValidos.map((size) => (
                       <SelectItem key={`modal-short-${size}`} value={size} className="cursor-pointer">
                         {size}
                       </SelectItem>

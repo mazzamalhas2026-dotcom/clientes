@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PedidoService } from '@/features/pedidos/services/pedidoService';
 import { prisma } from '@/lib/prisma';
-import { TamanhosValidos } from '@/features/coleta/types';
+import { TamanhosValidos, TamanhosShortsValidos } from '@/features/coleta/types';
 
 const pedidoService = new PedidoService();
 
@@ -28,6 +28,8 @@ export async function POST(
 
     for (const size of TamanhosValidos) {
       validatedCamisas[size] = Math.max(0, parseInt(camisas?.[size]) || 0);
+    }
+    for (const size of TamanhosShortsValidos) {
       validatedShorts[size] = Math.max(0, parseInt(shorts?.[size]) || 0);
     }
 
@@ -42,7 +44,7 @@ export async function POST(
 
     // Gerar lista expandida de shorts
     const pants: string[] = [];
-    for (const size of TamanhosValidos) {
+    for (const size of TamanhosShortsValidos) {
       const qty = validatedShorts[size];
       for (let i = 0; i < qty; i++) {
         pants.push(size);

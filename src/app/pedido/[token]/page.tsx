@@ -40,8 +40,7 @@ import {
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { Tamanho, TamanhosValidos, Participante, ResumoPedido } from '@/features/coleta/types';
+import { Tamanho, TamanhosValidos, TamanhoShort, TamanhosShortsValidos, Participante, ResumoPedido } from '@/features/coleta/types';
 import { Pedido } from '@/features/pedidos/types';
 
 // Interface local para linhas da planilha (com suporte a erros locais)
@@ -83,11 +82,11 @@ export default function PlanilhaColetaPage() {
     }, {} as Record<Tamanho, number>);
   });
 
-  const [gradeShorts, setGradeShorts] = React.useState<Record<Tamanho, number>>(() => {
-    return TamanhosValidos.reduce((acc, size) => {
+  const [gradeShorts, setGradeShorts] = React.useState<Record<TamanhoShort, number>>(() => {
+    return TamanhosShortsValidos.reduce((acc, size) => {
       acc[size] = 0;
       return acc;
-    }, {} as Record<Tamanho, number>);
+    }, {} as Record<TamanhoShort, number>);
   });
 
   // Seleção múltipla
@@ -118,17 +117,17 @@ export default function PlanilhaColetaPage() {
           return acc;
         }, {} as Record<Tamanho, number>);
 
-        const initialShorts = TamanhosValidos.reduce((acc, size) => {
+        const initialShorts = TamanhosShortsValidos.reduce((acc, size) => {
           acc[size] = 0;
           return acc;
-        }, {} as Record<Tamanho, number>);
+        }, {} as Record<TamanhoShort, number>);
 
         dbParticipants.forEach((p: any) => {
           if (p.tamanho && TamanhosValidos.includes(p.tamanho as Tamanho)) {
             initialCamisas[p.tamanho as Tamanho]++;
           }
-          if (p.tamanhoShort && TamanhosValidos.includes(p.tamanhoShort as Tamanho)) {
-            initialShorts[p.tamanhoShort as Tamanho]++;
+          if (p.tamanhoShort && TamanhosShortsValidos.includes(p.tamanhoShort as TamanhoShort)) {
+            initialShorts[p.tamanhoShort as TamanhoShort]++;
           }
         });
 
@@ -459,7 +458,7 @@ export default function PlanilhaColetaPage() {
         quantidade: camisas[tamanho] || 0,
       }));
 
-      const totalPorTamanhoShort = TamanhosValidos.map((tamanho) => ({
+      const totalPorTamanhoShort = TamanhosShortsValidos.map((tamanho) => ({
         tamanho,
         quantidade: shorts[tamanho] || 0,
       }));
@@ -516,24 +515,24 @@ export default function PlanilhaColetaPage() {
       return acc;
     }, {} as Record<Tamanho, number>);
 
-    const shortCounts = TamanhosValidos.reduce((acc, t) => {
+    const shortCounts = TamanhosShortsValidos.reduce((acc, t) => {
       acc[t] = 0;
       return acc;
-    }, {} as Record<Tamanho, number>);
+    }, {} as Record<TamanhoShort, number>);
 
     rowsRef.current.forEach((r) => {
       if (TamanhosValidos.includes(r.tamanho)) {
         counts[r.tamanho]++;
       }
-      if (r.tamanhoShort && TamanhosValidos.includes(r.tamanhoShort)) {
-        shortCounts[r.tamanhoShort]++;
+      if (r.tamanhoShort && TamanhosShortsValidos.includes(r.tamanhoShort as TamanhoShort)) {
+        shortCounts[r.tamanhoShort as TamanhoShort]++;
       }
     });
 
     setResumo({
       totalParticipantes: rowsRef.current.length,
       totalPorTamanho: TamanhosValidos.map((tamanho) => ({ tamanho, quantidade: counts[tamanho] })),
-      totalPorTamanhoShort: TamanhosValidos.map((tamanho) => ({ tamanho, quantidade: shortCounts[tamanho] })),
+      totalPorTamanhoShort: TamanhosShortsValidos.map((tamanho) => ({ tamanho, quantidade: shortCounts[tamanho] })),
     });
   }, []);
 
@@ -542,7 +541,8 @@ export default function PlanilhaColetaPage() {
     if (!pedido || pedido.tipoColeta === 'GRADE') return;
     const counts: Record<string, number> = {};
     const shortCounts: Record<string, number> = {};
-    TamanhosValidos.forEach((t) => { counts[t] = 0; shortCounts[t] = 0; });
+    TamanhosValidos.forEach((t) => { counts[t] = 0; });
+    TamanhosShortsValidos.forEach((t) => { shortCounts[t] = 0; });
     rows.forEach((r) => {
       if (r.tamanho && counts[r.tamanho] !== undefined) counts[r.tamanho]++;
       if (r.tamanhoShort && shortCounts[r.tamanhoShort] !== undefined) shortCounts[r.tamanhoShort]++;
@@ -550,7 +550,7 @@ export default function PlanilhaColetaPage() {
     setResumo({
       totalParticipantes: rows.length,
       totalPorTamanho: TamanhosValidos.map((t) => ({ tamanho: t, quantidade: counts[t] || 0 })),
-      totalPorTamanhoShort: TamanhosValidos.map((t) => ({ tamanho: t, quantidade: shortCounts[t] || 0 })),
+      totalPorTamanhoShort: TamanhosShortsValidos.map((t) => ({ tamanho: t, quantidade: shortCounts[t] || 0 })),
     });
   }, [rows, pedido]);
 
@@ -598,9 +598,9 @@ export default function PlanilhaColetaPage() {
       let observacoes = '';
 
       if (pedido?.tipoProduto === 'CONJUNTO') {
-        tamanhoShortStr = (cells[4]?.trim().toUpperCase() as Tamanho) || '';
+        tamanhoShortStr = (cells[4]?.trim().toUpperCase() as TamanhoShort) || '';
         observacoes = cells[5]?.trim() || '';
-        if (tamanhoShortStr && !TamanhosValidos.includes(tamanhoShortStr)) {
+        if (tamanhoShortStr && !TamanhosShortsValidos.includes(tamanhoShortStr)) {
           tamanhoShortStr = '';
         }
       } else {
@@ -936,7 +936,7 @@ export default function PlanilhaColetaPage() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {TamanhosValidos.map((size) => (
+                    {TamanhosShortsValidos.map((size) => (
                       <div key={`short-qty-${size}`} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-900 hover:bg-slate-50/50 dark:hover:bg-slate-900/10 transition-colors">
                         <Label className="font-bold text-slate-700 dark:text-slate-350">{size}</Label>
                         <div className="flex items-center gap-2">
@@ -1195,7 +1195,7 @@ export default function PlanilhaColetaPage() {
                                   <SelectValue placeholder="-" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg max-h-56 overflow-y-auto">
-                                  {TamanhosValidos.map((size) => (
+                                  {TamanhosShortsValidos.map((size) => (
                                     <SelectItem key={`short-${size}`} value={size} className="cursor-pointer text-sm">
                                       {size}
                                     </SelectItem>

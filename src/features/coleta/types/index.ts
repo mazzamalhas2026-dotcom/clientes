@@ -25,7 +25,28 @@ export const TamanhosValidos = [
   'BABY LOOK XG'
 ] as const;
 
+export const TamanhosShortsValidos = [
+  '2 anos',
+  '4 anos',
+  '6 anos',
+  '8 anos',
+  '10 anos',
+  '12 anos',
+  '14 anos',
+  'PP',
+  'P',
+  'M',
+  'G',
+  'GG',
+  'XG',
+  'XGG',
+  'XXG',
+  'XXXG',
+  'Especial'
+] as const;
+
 export type Tamanho = typeof TamanhosValidos[number];
+export type TamanhoShort = typeof TamanhosShortsValidos[number];
 
 export const ParticipanteSchema = z.object({
   id: z.string().uuid().optional(),

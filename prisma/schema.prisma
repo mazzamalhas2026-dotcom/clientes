@@ -1,0 +1,79 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Usuario {
+  id        String    @id @default(uuid()) @db.Uuid
+  email     String    @unique
+  senha     String
+  nome      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([email])
+  @@map("usuarios")
+}
+
+model Cliente {
+  id          String    @id @default(uuid()) @db.Uuid
+  nome        String
+  responsavel String
+  telefone    String?
+  whatsapp    String?
+  email       String?
+  observacoes String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+  pedidos     Pedido[]
+
+  @@map("clientes")
+}
+
+model Pedido {
+  id                 String         @id @default(uuid()) @db.Uuid
+  clienteId          String         @map("cliente_id") @db.Uuid
+  cliente            Cliente        @relation(fields: [clienteId], references: [id])
+  numeroPedido       String         @unique @map("numero_pedido")
+  token              String         @unique
+  descricao          String
+  quantidadePrevista Int            @map("quantidade_prevista")
+  observacoes        String?        @db.Text
+  status             String         @default("AGUARDANDO_PREENCHIMENTO") // AGUARDANDO_PREENCHIMENTO, EM_PREENCHIMENTO, FINALIZADO
+  tipoColeta         String         @default("NOMINAL") @map("tipo_coleta") // NOMINAL, GRADE
+  tipoProduto        String         @default("APENAS_CAMISA") @map("tipo_produto") // APENAS_CAMISA, CONJUNTO
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  deletedAt          DateTime?      @map("deleted_at")
+  participantes      Participante[]
+
+  @@index([token])
+  @@index([numeroPedido])
+  @@map("pedidos")
+}
+
+model Participante {
+  id           String    @id @default(uuid()) @db.Uuid
+  pedidoId     String    @map("pedido_id") @db.Uuid
+  pedido       Pedido    @relation(fields: [pedidoId], references: [id])
+  nomeCompleto String    @map("nome_completo")
+  nomeCamisa   String    @map("nome_camisa")
+  numero       String?
+  tamanho      String
+  tamanhoShort String?   @map("tamanho_short")
+  observacoes  String?   @db.Text
+  ipCriacao    String?   @map("ip_criacao")
+  finalizadoEm DateTime? @map("finalizado_em")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  @@index([pedidoId])
+  @@map("participantes")
+}

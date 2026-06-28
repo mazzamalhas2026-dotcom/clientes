@@ -429,7 +429,7 @@ export default function PlanilhaColetaPage() {
   };
 
   // Sincronizar grade simplificada (debounced)
-  const syncGradeToServer = async (camisas: Record<Tamanho, number>, shorts: Record<Tamanho, number>) => {
+  const syncGradeToServer = async (camisas: Record<Tamanho, number>, shorts: Record<TamanhoShort, number>) => {
     setLastSaved('Salvando...');
     setSyncError(null);
 

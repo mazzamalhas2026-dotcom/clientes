@@ -477,7 +477,7 @@ export default function PlanilhaColetaPage() {
   // Debounce para salvamento de grade
   const gradeDebounceTimeout = React.useRef<NodeJS.Timeout | null>(null);
 
-  const handleGradeQtyChange = (type: 'camisas' | 'shorts', size: Tamanho, valStr: string) => {
+  const handleGradeQtyChange = (type: 'camisas' | 'shorts', size: Tamanho | TamanhoShort, valStr: string) => {
     if (pedido?.status === 'FINALIZADO') return;
 
     const val = Math.max(0, parseInt(valStr) || 0);
@@ -486,10 +486,10 @@ export default function PlanilhaColetaPage() {
     let updatedShorts = { ...gradeShorts };
 
     if (type === 'camisas') {
-      updatedCamisas[size] = val;
+      updatedCamisas[size as Tamanho] = val;
       setGradeCamisas(updatedCamisas);
     } else {
-      updatedShorts[size] = val;
+      updatedShorts[size as TamanhoShort] = val;
       setGradeShorts(updatedShorts);
     }
 

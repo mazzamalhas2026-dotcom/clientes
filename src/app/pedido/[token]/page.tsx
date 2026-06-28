@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { Tamanho, TamanhosValidos, TamanhoShort, TamanhosShortsValidos, Participante, ResumoPedido } from '@/features/coleta/types';
 import { Pedido } from '@/features/pedidos/types';
 

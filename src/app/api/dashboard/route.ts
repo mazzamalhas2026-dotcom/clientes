@@ -39,7 +39,7 @@ export async function GET() {
       FINALIZADO: 0,
     };
 
-    statusCounts.forEach((group) => {
+    statusCounts.forEach((group: { status: string; _count: { id: number } }) => {
       const statusKey = group.status as keyof typeof statusBreakdown;
       if (statusKey in statusBreakdown) {
         statusBreakdown[statusKey] = group._count.id;

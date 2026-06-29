@@ -424,6 +424,10 @@ export default function PedidoDetailPage() {
   const isConj = pedido.tipoProduto === 'CONJUNTO';
   const isGrade = pedido.tipoColeta === 'GRADE';
 
+  const totalCamisas = participantes.reduce((sum, p) => sum + (p.quantidadeCamisa ?? 1), 0);
+  const totalShorts = participantes.reduce((sum, p) => sum + (p.tamanhoShort ? (p.quantidadeShort ?? 1) : 0), 0);
+  const totalPecasPrint = totalCamisas + totalShorts;
+
   return (
     <div className="space-y-6">
       
@@ -443,7 +447,7 @@ export default function PedidoDetailPage() {
         </div>
 
         <div className="flex gap-4 text-xs font-bold bg-gray-150 p-3 border border-black rounded-lg flex-wrap">
-          <div>Total de Peças: {participantes.length} unid.</div>
+          <div>Total de Peças: {totalPecasPrint} unid.</div>
           <div>•</div>
           <div>Grade: {isGrade ? 'Simplificada (Sem Nomes)' : 'Lista Nominal'}</div>
           <div>•</div>
@@ -455,8 +459,8 @@ export default function PedidoDetailPage() {
           const camisaCounts: Record<string, number> = {};
           const shortCounts: Record<string, number> = {};
           participantes.forEach((p) => {
-            if (p.tamanho) camisaCounts[p.tamanho] = (camisaCounts[p.tamanho] || 0) + 1;
-            if (p.tamanhoShort) shortCounts[p.tamanhoShort] = (shortCounts[p.tamanhoShort] || 0) + 1;
+            if (p.tamanho) camisaCounts[p.tamanho] = (camisaCounts[p.tamanho] || 0) + (p.quantidadeCamisa ?? 1);
+            if (p.tamanhoShort) shortCounts[p.tamanhoShort] = (shortCounts[p.tamanhoShort] || 0) + (p.quantidadeShort ?? 1);
           });
           const hasShortsData = Object.keys(shortCounts).length > 0;
           return (
@@ -481,7 +485,7 @@ export default function PedidoDetailPage() {
                     ))}
                     <tr className="bg-gray-100 font-black">
                       <td className="border border-black p-1">TOTAL</td>
-                      <td className="border border-black p-1 text-center">{participantes.length}</td>
+                      <td className="border border-black p-1 text-center">{Object.values(camisaCounts).reduce((a, b) => a + b, 0)}</td>
                       <td className="border border-black p-1"></td>
                     </tr>
                   </tbody>
@@ -724,10 +728,10 @@ export default function PedidoDetailPage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-baseline">
                   <span className="text-3xl font-black text-slate-800 dark:text-white">
-                    {participantes.length}
+                    {totalCamisas}
                   </span>
-                  <span className="text-xs text-slate-400">
-                    de {pedido.quantidadePrevista} previstas
+                  <span className="text-xs text-slate-450 dark:text-slate-400 font-medium">
+                    de {pedido.quantidadePrevista} previstas {isConj && `(${totalShorts} shorts)`}
                   </span>
                 </div>
                 
@@ -735,12 +739,12 @@ export default function PedidoDetailPage() {
                 <div className="w-full bg-slate-100 dark:bg-slate-900 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full transition-all duration-500 ${
-                      participantes.length >= pedido.quantidadePrevista
+                      totalCamisas >= pedido.quantidadePrevista
                         ? 'bg-emerald-500'
                         : 'bg-indigo-650'
                     }`}
                     style={{
-                      width: `${Math.min(100, (participantes.length / pedido.quantidadePrevista) * 100)}%`,
+                      width: `${Math.min(100, (totalCamisas / pedido.quantidadePrevista) * 100)}%`,
                     }}
                   />
                 </div>

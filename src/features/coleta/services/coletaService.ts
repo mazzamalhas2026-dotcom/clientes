@@ -108,10 +108,10 @@ export class ColetaService {
 
     for (const p of participants) {
       if (TamanhosValidos.includes(p.tamanho as Tamanho)) {
-        counts[p.tamanho as Tamanho]++;
+        counts[p.tamanho as Tamanho] += p.quantidadeCamisa ?? 1;
       }
       if (p.tamanhoShort && TamanhosShortsValidos.includes(p.tamanhoShort as TamanhoShort)) {
-        shortCounts[p.tamanhoShort as TamanhoShort]++;
+        shortCounts[p.tamanhoShort as TamanhoShort] += p.quantidadeShort ?? 1;
       }
     }
 
@@ -126,8 +126,11 @@ export class ColetaService {
       quantidade: shortCounts[tamanho],
     }));
 
+    const totalCamisas = Object.values(counts).reduce((a, b) => a + b, 0);
+    const totalShorts = Object.values(shortCounts).reduce((a, b) => a + b, 0);
+
     return {
-      totalParticipantes: participants.length,
+      totalParticipantes: Math.max(totalCamisas, totalShorts),
       totalPorTamanho,
       totalPorTamanhoShort,
     };

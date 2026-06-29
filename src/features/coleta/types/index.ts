@@ -72,6 +72,16 @@ export const ParticipanteSchema = z.object({
     .nullable()
     .optional()
     .transform((val) => (val ? val.trim() : null)),
+  quantidadeCamisa: z
+    .number()
+    .int()
+    .min(0)
+    .default(1),
+  quantidadeShort: z
+    .number()
+    .int()
+    .min(0)
+    .default(1),
   observacoes: z
     .string()
     .nullable()
@@ -89,6 +99,8 @@ export interface Participante {
   numero: string | null;
   tamanho: Tamanho;
   tamanhoShort: string | null;
+  quantidadeCamisa: number;
+  quantidadeShort: number;
   observacoes: string | null;
   ipCriacao: string | null;
   finalizadoEm: Date | null;

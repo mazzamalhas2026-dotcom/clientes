@@ -52,7 +52,9 @@ interface LocalRow {
   nomeCamisa: string;
   numero: string;
   tamanho: Tamanho;
-  tamanhoShort: Tamanho | '';
+  tamanhoShort: TamanhoShort | '';
+  quantidadeCamisa: number;
+  quantidadeShort: number;
   observacoes: string;
   isSaving: boolean;
   errors: {
@@ -145,7 +147,9 @@ export default function PlanilhaColetaPage() {
               nomeCamisa: p.nomeCamisa || '',
               numero: p.numero || '',
               tamanho: (p.tamanho as Tamanho) || 'M',
-              tamanhoShort: (p.tamanhoShort as Tamanho) || '',
+              tamanhoShort: (p.tamanhoShort as TamanhoShort) || '',
+              quantidadeCamisa: p.quantidadeCamisa ?? 1,
+              quantidadeShort: p.quantidadeShort ?? 1,
               observacoes: p.observacoes || '',
               isSaving: false,
               errors: {},
@@ -178,6 +182,8 @@ export default function PlanilhaColetaPage() {
       numero: '',
       tamanho: 'M',
       tamanhoShort: '',
+      quantidadeCamisa: 1,
+      quantidadeShort: 1,
       observacoes: '',
       isSaving: false,
       errors: {},
@@ -315,14 +321,8 @@ export default function PlanilhaColetaPage() {
   const validateLocalRow = (row: LocalRow) => {
     const errors: LocalRow['errors'] = {};
 
-    if (!row.nomeCompleto.trim()) {
-      errors.nomeCompleto = 'Nome completo é obrigatório';
-    }
-    if (!row.nomeCamisa.trim()) {
-      errors.nomeCamisa = 'Nome na camisa é obrigatório';
-    }
-
-    // Verificar número duplicado no estado local
+    // Os nomes não são mais estritamente obrigatórios.
+    // Apenas validamos se o número está duplicado no estado local
     if (row.numero.trim()) {
       const count = rows.filter((r) => r.numero.trim() === row.numero.trim() && r.id !== row.id).length;
       if (count > 0) {
@@ -355,10 +355,21 @@ export default function PlanilhaColetaPage() {
       const row = rowsRef.current.find((r) => r.id === rowId);
       if (!row) return;
       validateLocalRow(row);
-      // Só salva se não há erros, tem conteúdo mínimo, e não está sendo salvo já
+      
+      const hasContent = 
+        row.dbId || 
+        row.nomeCompleto.trim() || 
+        row.nomeCamisa.trim() || 
+        row.numero.trim() || 
+        row.tamanhoShort || 
+        row.observacoes.trim() || 
+        row.quantidadeCamisa !== 1 || 
+        row.quantidadeShort !== 1;
+
+      // Só salva se não há erros, tem conteúdo mínimo relevante, e não está sendo salvo já
       if (
         Object.keys(row.errors).length === 0 &&
-        (row.nomeCompleto || row.nomeCamisa) &&
+        hasContent &&
         !savingRowIds.current.has(rowId)
       ) {
         saveRowToServer(row);
@@ -392,6 +403,8 @@ export default function PlanilhaColetaPage() {
         numero: row.numero || null,
         tamanho: row.tamanho,
         tamanhoShort: row.tamanhoShort || null,
+        quantidadeCamisa: row.quantidadeCamisa,
+        quantidadeShort: row.quantidadeShort,
         observacoes: row.observacoes || null,
       };
 
@@ -523,15 +536,18 @@ export default function PlanilhaColetaPage() {
 
     rowsRef.current.forEach((r) => {
       if (TamanhosValidos.includes(r.tamanho)) {
-        counts[r.tamanho]++;
+        counts[r.tamanho] += r.quantidadeCamisa ?? 1;
       }
       if (r.tamanhoShort && TamanhosShortsValidos.includes(r.tamanhoShort as TamanhoShort)) {
-        shortCounts[r.tamanhoShort as TamanhoShort]++;
+        shortCounts[r.tamanhoShort as TamanhoShort] += r.quantidadeShort ?? 1;
       }
     });
 
+    const totalCamisas = Object.values(counts).reduce((a, b) => a + b, 0);
+    const totalShorts = Object.values(shortCounts).reduce((a, b) => a + b, 0);
+
     setResumo({
-      totalParticipantes: rowsRef.current.length,
+      totalParticipantes: Math.max(totalCamisas, totalShorts),
       totalPorTamanho: TamanhosValidos.map((tamanho) => ({ tamanho, quantidade: counts[tamanho] })),
       totalPorTamanhoShort: TamanhosShortsValidos.map((tamanho) => ({ tamanho, quantidade: shortCounts[tamanho] })),
     });
@@ -545,11 +561,17 @@ export default function PlanilhaColetaPage() {
     TamanhosValidos.forEach((t) => { counts[t] = 0; });
     TamanhosShortsValidos.forEach((t) => { shortCounts[t] = 0; });
     rows.forEach((r) => {
-      if (r.tamanho && counts[r.tamanho] !== undefined) counts[r.tamanho]++;
-      if (r.tamanhoShort && shortCounts[r.tamanhoShort] !== undefined) shortCounts[r.tamanhoShort]++;
+      if (r.tamanho && counts[r.tamanho] !== undefined) {
+        counts[r.tamanho] += r.quantidadeCamisa ?? 1;
+      }
+      if (r.tamanhoShort && shortCounts[r.tamanhoShort] !== undefined) {
+        shortCounts[r.tamanhoShort] += r.quantidadeShort ?? 1;
+      }
     });
+    const totalCamisas = Object.values(counts).reduce((a, b) => a + b, 0);
+    const totalShorts = Object.values(shortCounts).reduce((a, b) => a + b, 0);
     setResumo({
-      totalParticipantes: rows.length,
+      totalParticipantes: Math.max(totalCamisas, totalShorts),
       totalPorTamanho: TamanhosValidos.map((t) => ({ tamanho: t, quantidade: counts[t] || 0 })),
       totalPorTamanhoShort: TamanhosShortsValidos.map((t) => ({ tamanho: t, quantidade: shortCounts[t] || 0 })),
     });
@@ -621,6 +643,8 @@ export default function PlanilhaColetaPage() {
           numero,
           tamanho: tamanhoStr as Tamanho,
           tamanhoShort: tamanhoShortStr,
+          quantidadeCamisa: 1,
+          quantidadeShort: 1,
           observacoes,
           isSaving: false,
           errors: {},
@@ -1057,15 +1081,17 @@ export default function PlanilhaColetaPage() {
                         </TableHead>
                       )}
                       <TableHead className="w-10 text-center text-xs font-semibold text-slate-400">#</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs min-w-[200px]">Nome Completo *</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs min-w-[150px]">Nome na Camisa *</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs min-w-[200px]">Nome Completo</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs min-w-[150px]">Nome na Camisa</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-24 text-center">Número</TableHead>
                       
                       {/* Tamanhos da Camisa */}
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-32 text-center">Camisa *</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-28 text-center">Camisa</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-20 text-center">Qtd</TableHead>
                       
                       {/* Tamanho Short - sempre visível */}
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-32 text-center">Short</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-28 text-center">Short</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-20 text-center">Qtd</TableHead>
                       
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs min-w-[180px]">Observações</TableHead>
                       {!isLocked && <TableHead className="w-20"></TableHead>}
@@ -1074,7 +1100,7 @@ export default function PlanilhaColetaPage() {
                   <TableBody>
                     {rows.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={isLocked ? 7 : 9} className="py-20 text-center text-slate-400 text-sm">
+                        <TableCell colSpan={isLocked ? 9 : 11} className="py-20 text-center text-slate-400 text-sm">
                           <AlertCircle className="h-8 w-8 mx-auto mb-2 text-slate-300" />
                           Nenhum participante adicionado.
                         </TableCell>
@@ -1178,6 +1204,25 @@ export default function PlanilhaColetaPage() {
                             )}
                           </TableCell>
 
+                          {/* Qtd Camisa */}
+                          <TableCell className="py-2 text-center">
+                            {isLocked ? (
+                              <span className="font-bold text-slate-750 dark:text-slate-300">{row.quantidadeCamisa}</span>
+                            ) : (
+                              <Input
+                                type="number"
+                                min="0"
+                                value={row.quantidadeCamisa}
+                                onChange={(e) => {
+                                  const val = Math.max(0, parseInt(e.target.value) || 0);
+                                  handleCellChange(row.id, 'quantidadeCamisa', val);
+                                  recalculateSummary();
+                                }}
+                                className="h-9 w-16 text-center font-bold border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-transparent mx-auto"
+                              />
+                            )}
+                          </TableCell>
+
                           {/* Tamanho Short - sempre visível */}
                           <TableCell className="py-2 text-center">
                             {isLocked ? (
@@ -1203,6 +1248,25 @@ export default function PlanilhaColetaPage() {
                                   ))}
                                 </SelectContent>
                               </Select>
+                            )}
+                          </TableCell>
+
+                          {/* Qtd Short */}
+                          <TableCell className="py-2 text-center">
+                            {isLocked ? (
+                              <span className="font-bold text-slate-750 dark:text-slate-300">{row.quantidadeShort}</span>
+                            ) : (
+                              <Input
+                                type="number"
+                                min="0"
+                                value={row.quantidadeShort}
+                                onChange={(e) => {
+                                  const val = Math.max(0, parseInt(e.target.value) || 0);
+                                  handleCellChange(row.id, 'quantidadeShort', val);
+                                  recalculateSummary();
+                                }}
+                                className="h-9 w-16 text-center font-bold border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-transparent mx-auto"
+                              />
                             )}
                           </TableCell>
 

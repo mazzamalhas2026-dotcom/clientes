@@ -76,6 +76,7 @@ export default function PedidoDetailPage() {
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<any>({
     resolver: zodResolver(ParticipanteSchema),
@@ -86,9 +87,14 @@ export default function PedidoDetailPage() {
       numero: '',
       tamanho: 'M',
       tamanhoShort: '',
+      quantidadeCamisa: 1,
+      quantidadeShort: 1,
       observacoes: '',
     },
   });
+
+  const watchTamanho = watch('tamanho');
+  const watchTamanhoShort = watch('tamanhoShort');
 
   const loadData = async () => {
     setIsLoading(true);
@@ -146,6 +152,8 @@ export default function PedidoDetailPage() {
       numero: '',
       tamanho: 'M',
       tamanhoShort: '',
+      quantidadeCamisa: 1,
+      quantidadeShort: 1,
       observacoes: '',
     });
     setEditingPart(null);
@@ -159,6 +167,8 @@ export default function PedidoDetailPage() {
     setValue('numero', part.numero || '');
     setValue('tamanho', part.tamanho || 'M');
     setValue('tamanhoShort', part.tamanhoShort || '');
+    setValue('quantidadeCamisa', part.quantidadeCamisa ?? 1);
+    setValue('quantidadeShort', part.quantidadeShort ?? 1);
     setValue('observacoes', part.observacoes || '');
     setIsCreateOpen(true);
   };
@@ -181,6 +191,8 @@ export default function PedidoDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
+          quantidadeCamisa: parseInt(data.quantidadeCamisa) || 0,
+          quantidadeShort: parseInt(data.quantidadeShort) || 0,
           tamanhoShort: data.tamanhoShort || null,
         }),
       });
@@ -254,7 +266,9 @@ export default function PedidoDetailPage() {
       'Nome Camisa': p.nomeCamisa,
       'Número': p.numero || '',
       'Tamanho Camisa': p.tamanho,
+      'Qtd Camisa': p.quantidadeCamisa ?? 1,
       'Tamanho Short': p.tamanhoShort || '',
+      'Qtd Short': p.tamanhoShort ? (p.quantidadeShort ?? 1) : 0,
       'Observações': p.observacoes || '',
     }));
 
@@ -264,8 +278,8 @@ export default function PedidoDetailPage() {
     const camisaCounts: Record<string, number> = {};
     const shortCounts: Record<string, number> = {};
     participantes.forEach((p) => {
-      if (p.tamanho) camisaCounts[p.tamanho] = (camisaCounts[p.tamanho] || 0) + 1;
-      if (p.tamanhoShort) shortCounts[p.tamanhoShort] = (shortCounts[p.tamanhoShort] || 0) + 1;
+      if (p.tamanho) camisaCounts[p.tamanho] = (camisaCounts[p.tamanho] || 0) + (p.quantidadeCamisa ?? 1);
+      if (p.tamanhoShort) shortCounts[p.tamanhoShort] = (shortCounts[p.tamanhoShort] || 0) + (p.quantidadeShort ?? 1);
     });
 
     const allSizes = Array.from(new Set([...Object.keys(camisaCounts), ...Object.keys(shortCounts)]));
@@ -274,10 +288,14 @@ export default function PedidoDetailPage() {
       'Qtd Camisas': camisaCounts[size] || 0,
       'Qtd Shorts': shortCounts[size] || 0,
     }));
+
+    const totalCamisas = Object.values(camisaCounts).reduce((a, b) => a + b, 0);
+    const totalShorts = Object.values(shortCounts).reduce((a, b) => a + b, 0);
+
     summaryData.push({
       'Tamanho': 'TOTAL',
-      'Qtd Camisas': participantes.length,
-      'Qtd Shorts': participantes.filter(p => p.tamanhoShort).length,
+      'Qtd Camisas': totalCamisas,
+      'Qtd Shorts': totalShorts,
     });
 
     const summarySheet = XLSX.utils.json_to_sheet(summaryData);
@@ -296,9 +314,9 @@ export default function PedidoDetailPage() {
 
     const isConj = pedido.tipoProduto === 'CONJUNTO';
 
-    const headers = ['Nome Completo', 'Nome Camisa', 'Número', 'Tamanho Camisa'];
+    const headers = ['Nome Completo', 'Nome Camisa', 'Número', 'Tamanho Camisa', 'Qtd Camisa'];
     if (isConj) {
-      headers.push('Tamanho Short');
+      headers.push('Tamanho Short', 'Qtd Short');
     }
     headers.push('Observações');
 
@@ -308,9 +326,10 @@ export default function PedidoDetailPage() {
         p.nomeCamisa,
         p.numero || '',
         p.tamanho,
+        (p.quantidadeCamisa ?? 1).toString(),
       ];
       if (isConj) {
-        cols.push(p.tamanhoShort || '');
+        cols.push(p.tamanhoShort || '', p.tamanhoShort ? (p.quantidadeShort ?? 1).toString() : '0');
       }
       cols.push(p.observacoes || '');
       return cols;
@@ -585,8 +604,12 @@ export default function PedidoDetailPage() {
                   <td className="border border-black p-1 font-bold truncate max-w-[150px]">{p.nomeCompleto}</td>
                   <td className="border border-black p-1 font-semibold truncate max-w-[100px]">{p.nomeCamisa}</td>
                   <td className="border border-black p-1 text-center font-bold">{p.numero || '-'}</td>
-                  <td className="border border-black p-1 text-center font-extrabold uppercase">{p.tamanho}</td>
-                  <td className="border border-black p-1 text-center font-extrabold uppercase">{p.tamanhoShort || '-'}</td>
+                  <td className="border border-black p-1 text-center font-extrabold uppercase">
+                    {p.tamanho} {p.quantidadeCamisa > 1 ? `(x${p.quantidadeCamisa})` : ''}
+                  </td>
+                  <td className="border border-black p-1 text-center font-extrabold uppercase">
+                    {p.tamanhoShort ? `${p.tamanhoShort} ${p.quantidadeShort > 1 ? `(x${p.quantidadeShort})` : ''}` : '-'}
+                  </td>
                   <td className="border border-black p-1 text-[9px] truncate max-w-[150px]">{p.observacoes || '-'}</td>
                   <td className="border border-black p-1 text-center">[ ]</td>
                   <td className="border border-black p-1 text-center">[ ]</td>
@@ -943,13 +966,10 @@ export default function PedidoDetailPage() {
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs">Nome Completo</TableHead>
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs">Nome na Camisa</TableHead>
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center">Número</TableHead>
-                        
-                        {/* Camisas */}
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center">Camisa</TableHead>
-                        
-                        {/* Short - sempre visível */}
+                        <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center w-16">Qtd</TableHead>
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center">Short</TableHead>
-                        
+                        <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center w-16">Qtd</TableHead>
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs">Observações</TableHead>
                         <TableHead className="w-16"></TableHead>
                       </TableRow>
@@ -974,12 +994,16 @@ export default function PedidoDetailPage() {
                               {part.tamanho}
                             </span>
                           </TableCell>
-                          
-                          {/* Short - sempre visível */}
+                          <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200 text-sm">
+                            {part.quantidadeCamisa}
+                          </TableCell>
                           <TableCell className="text-center">
                             <span className="inline-block px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 text-xs font-extrabold rounded-md min-w-[32px] uppercase">
                               {part.tamanhoShort || '-'}
                             </span>
+                          </TableCell>
+                          <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200 text-sm">
+                            {part.tamanhoShort ? part.quantidadeShort : '-'}
                           </TableCell>
                           <TableCell className="text-slate-550 dark:text-slate-400 text-xs max-w-[200px] truncate" title={part.observacoes || ''}>
                             {part.observacoes || <span className="text-slate-300 dark:text-slate-800">-</span>}
@@ -1037,7 +1061,7 @@ export default function PedidoDetailPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="nomeCompleto" className="text-slate-700 dark:text-slate-350">Nome Completo *</Label>
+              <Label htmlFor="nomeCompleto" className="text-slate-700 dark:text-slate-350">Nome Completo</Label>
               <Input
                 id="nomeCompleto"
                 placeholder="Ex: João da Silva Santos"
@@ -1049,7 +1073,7 @@ export default function PedidoDetailPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="nomeCamisa" className="text-slate-700 dark:text-slate-350">Nome na Camisa *</Label>
+              <Label htmlFor="nomeCamisa" className="text-slate-700 dark:text-slate-350">Nome na Camisa</Label>
               <Input
                 id="nomeCamisa"
                 placeholder="Ex: JOÃO SILVA"
@@ -1076,7 +1100,7 @@ export default function PedidoDetailPage() {
               <div className="space-y-2">
                 <Label htmlFor="tamanho" className="text-slate-700 dark:text-slate-350">Camisa *</Label>
                 <Select
-                  defaultValue="M"
+                  value={watchTamanho || 'M'}
                   onValueChange={(val) => setValue('tamanho', val as any)}
                   disabled={isSubmitLoading}
                 >
@@ -1095,11 +1119,40 @@ export default function PedidoDetailPage() {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="quantidadeCamisa" className="text-slate-700 dark:text-slate-350">Qtd Camisa</Label>
+                <Input
+                  id="quantidadeCamisa"
+                  type="number"
+                  min="0"
+                  className="rounded-lg border-slate-200 dark:border-slate-800 focus-visible:ring-indigo-500 text-center font-bold"
+                  {...register('quantidadeCamisa', { valueAsNumber: true })}
+                  disabled={isSubmitLoading}
+                />
+              </div>
+              {isConj ? (
+                <div className="space-y-2">
+                  <Label htmlFor="quantidadeShort" className="text-slate-700 dark:text-slate-350">Qtd Short</Label>
+                  <Input
+                    id="quantidadeShort"
+                    type="number"
+                    min="0"
+                    className="rounded-lg border-slate-200 dark:border-slate-800 focus-visible:ring-indigo-500 text-center font-bold"
+                    {...register('quantidadeShort', { valueAsNumber: true })}
+                    disabled={isSubmitLoading}
+                  />
+                </div>
+              ) : (
+                <div />
+              )}
+            </div>
+
             {isConj && (
               <div className="space-y-2">
-                <Label htmlFor="tamanhoShort" className="text-slate-700 dark:text-slate-350">Tamanho do Short *</Label>
+                <Label htmlFor="tamanhoShort" className="text-slate-700 dark:text-slate-350">Tamanho do Short</Label>
                 <Select
-                  defaultValue=""
+                  value={watchTamanhoShort || ''}
                   onValueChange={(val) => setValue('tamanhoShort', val as any)}
                   disabled={isSubmitLoading}
                 >

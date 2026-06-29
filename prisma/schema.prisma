@@ -58,20 +58,22 @@ model Pedido {
 }
 
 model Participante {
-  id           String    @id @default(uuid()) @db.Uuid
-  pedidoId     String    @map("pedido_id") @db.Uuid
-  pedido       Pedido    @relation(fields: [pedidoId], references: [id])
-  nomeCompleto String    @map("nome_completo")
-  nomeCamisa   String    @map("nome_camisa")
-  numero       String?
-  tamanho      String
-  tamanhoShort String?   @map("tamanho_short")
-  observacoes  String?   @db.Text
-  ipCriacao    String?   @map("ip_criacao")
-  finalizadoEm DateTime? @map("finalizado_em")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
+  id               String    @id @default(uuid()) @db.Uuid
+  pedidoId         String    @map("pedido_id") @db.Uuid
+  pedido           Pedido    @relation(fields: [pedidoId], references: [id])
+  nomeCompleto     String    @map("nome_completo")
+  nomeCamisa       String    @map("nome_camisa")
+  numero           String?
+  tamanho          String
+  tamanhoShort     String?   @map("tamanho_short")
+  quantidadeCamisa Int       @default(1) @map("quantidade_camisa")
+  quantidadeShort  Int       @default(1) @map("quantidade_short")
+  observacoes      String?   @db.Text
+  ipCriacao        String?   @map("ip_criacao")
+  finalizadoEm     DateTime? @map("finalizado_em")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
 
   @@index([pedidoId])
   @@map("participantes")

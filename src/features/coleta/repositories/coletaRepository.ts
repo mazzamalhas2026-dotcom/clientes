@@ -34,6 +34,8 @@ export class ColetaRepository {
         numero: data.numero,
         tamanho: data.tamanho,
         tamanhoShort: data.tamanhoShort,
+        quantidadeCamisa: data.quantidadeCamisa ?? 1,
+        quantidadeShort: data.quantidadeShort ?? 1,
         observacoes: data.observacoes,
         ipCriacao: data.ipCriacao,
       },
@@ -53,6 +55,8 @@ export class ColetaRepository {
         numero: data.numero,
         tamanho: data.tamanho,
         tamanhoShort: data.tamanhoShort,
+        quantidadeCamisa: data.quantidadeCamisa,
+        quantidadeShort: data.quantidadeShort,
         observacoes: data.observacoes,
       },
     });

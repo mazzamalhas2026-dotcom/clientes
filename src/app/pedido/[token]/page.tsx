@@ -263,6 +263,8 @@ export default function PlanilhaColetaPage() {
       numero: '', // não duplicar número para evitar erros imediatos
       tamanho: row.tamanho,
       tamanhoShort: row.tamanhoShort,
+      quantidadeCamisa: row.quantidadeCamisa,
+      quantidadeShort: row.quantidadeShort,
       observacoes: row.observacoes,
       isSaving: false,
       errors: {},

@@ -300,7 +300,7 @@ export default function PlanilhaColetaPage() {
   };
 
   // Atualizar célula local
-  const handleCellChange = (rowId: string, field: keyof LocalRow, value: string) => {
+  const handleCellChange = (rowId: string, field: keyof LocalRow, value: any) => {
     if (pedido?.status === 'FINALIZADO') return;
 
     setRows((prev) =>

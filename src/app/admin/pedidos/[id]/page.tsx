@@ -20,7 +20,8 @@ import {
   FileSpreadsheet,
   Printer,
   Shirt,
-  Scissors
+  Scissors,
+  Unlock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -60,6 +61,7 @@ export default function PedidoDetailPage() {
   const [sizeFilter, setSizeFilter] = React.useState<string>('todos');
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSubmitLoading, setIsSubmitLoading] = React.useState(false);
+  const [isReopening, setIsReopening] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
   // Estados dos Modais
@@ -210,6 +212,31 @@ export default function PedidoDetailPage() {
       setError(err.message);
     } finally {
       setIsSubmitLoading(false);
+    }
+  };
+
+  // Reabrir Coleta
+  const handleReopenOrder = async () => {
+    if (!confirm('Tem certeza que deseja reabrir este pedido? O cliente poderá alterar as informações novamente.')) return;
+    setIsReopening(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/pedidos/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'EM_PREENCHIMENTO' }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Erro ao reabrir pedido');
+      }
+
+      await loadData();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsReopening(false);
     }
   };
 
@@ -706,12 +733,32 @@ export default function PedidoDetailPage() {
 
           {/* Alerta de Auditoria se Finalizado */}
           {pedido.status === PedidoStatus.FINALIZADO && (
-            <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 rounded-xl text-xs text-emerald-700 dark:text-emerald-450 flex items-start gap-2">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
-              <div>
-                <span className="font-bold animate-pulse">Coleta Finalizada!</span> Este pedido foi concluído e travado pelo cliente. 
-                Como administrador, você ainda pode realizar alterações corretivas na tabela abaixo.
+            <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/40 rounded-xl text-xs text-emerald-700 dark:text-emerald-450 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
+                <div>
+                  <span className="font-bold animate-pulse">Coleta Finalizada!</span> Este pedido foi concluído e travado pelo cliente. 
+                  Como administrador, você ainda pode realizar alterações corretivas na tabela abaixo ou reabrir para o cliente.
+                </div>
               </div>
+              <Button
+                size="sm"
+                onClick={handleReopenOrder}
+                disabled={isReopening}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg px-3 py-1.5 h-auto text-xs shrink-0 self-end sm:self-center cursor-pointer shadow-sm"
+              >
+                {isReopening ? (
+                  <>
+                    <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    Reabrindo...
+                  </>
+                ) : (
+                  <>
+                    <Unlock className="mr-1 h-3 w-3" />
+                    Reabrir Coleta
+                  </>
+                )}
+              </Button>
             </div>
           )}
         </div>

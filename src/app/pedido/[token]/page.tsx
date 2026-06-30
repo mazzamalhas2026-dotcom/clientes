@@ -321,18 +321,7 @@ export default function PlanilhaColetaPage() {
 
   // Validação local
   const validateLocalRow = (row: LocalRow) => {
-    const errors: LocalRow['errors'] = {};
-
-    // Os nomes não são mais estritamente obrigatórios.
-    // Apenas validamos se o número está duplicado no estado local
-    if (row.numero.trim()) {
-      const count = rows.filter((r) => r.numero.trim() === row.numero.trim() && r.id !== row.id).length;
-      if (count > 0) {
-        errors.numero = 'Número duplicado';
-      }
-    }
-
-    row.errors = errors;
+    row.errors = {};
   };
 
   // Ref espelhando rows para acesso dentro de timeouts (evita state stale)

@@ -16,7 +16,7 @@ export const PedidoSchema = z.object({
   observacoes: z.string().nullable().optional(),
   status: z.nativeEnum(PedidoStatus).optional(),
   tipoColeta: z.enum(['NOMINAL', 'GRADE']).optional().default('NOMINAL'),
-  tipoProduto: z.enum(['APENAS_CAMISA', 'CONJUNTO']).optional().default('APENAS_CAMISA'),
+  tipoProduto: z.enum(['APENAS_CAMISA', 'CONJUNTO', 'APENAS_CALCA', 'APENAS_SHORT', 'APENAS_BERMUDA', 'APENAS_AGASALHO']).optional().default('APENAS_CAMISA'),
 });
 
 export type PedidoInput = z.infer<typeof PedidoSchema>;
@@ -31,7 +31,7 @@ export interface Pedido {
   observacoes: string | null;
   status: PedidoStatusType;
   tipoColeta: 'NOMINAL' | 'GRADE';
-  tipoProduto: 'APENAS_CAMISA' | 'CONJUNTO';
+  tipoProduto: 'APENAS_CAMISA' | 'CONJUNTO' | 'APENAS_CALCA' | 'APENAS_SHORT' | 'APENAS_BERMUDA' | 'APENAS_AGASALHO';
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;

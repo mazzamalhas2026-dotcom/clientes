@@ -1019,8 +1019,12 @@ export default function PedidoDetailPage() {
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center">Número</TableHead>
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center">Camisa</TableHead>
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center w-16">Qtd</TableHead>
-                        <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center">Short</TableHead>
-                        <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center w-16">Qtd</TableHead>
+                        {isConj && (
+                          <>
+                            <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center">Short</TableHead>
+                            <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center w-16">Qtd</TableHead>
+                          </>
+                        )}
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs">Observações</TableHead>
                         <TableHead className="w-16"></TableHead>
                       </TableRow>
@@ -1048,14 +1052,18 @@ export default function PedidoDetailPage() {
                           <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200 text-sm">
                             {part.quantidadeCamisa}
                           </TableCell>
-                          <TableCell className="text-center">
-                            <span className="inline-block px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 text-xs font-extrabold rounded-md min-w-[32px] uppercase">
-                              {part.tamanhoShort || '-'}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200 text-sm">
-                            {part.tamanhoShort ? part.quantidadeShort : '-'}
-                          </TableCell>
+                          {isConj && (
+                            <>
+                              <TableCell className="text-center">
+                                <span className="inline-block px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/40 text-xs font-extrabold rounded-md min-w-[32px] uppercase">
+                                  {part.tamanhoShort || '-'}
+                                </span>
+                              </TableCell>
+                              <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200 text-sm">
+                                {part.tamanhoShort ? part.quantidadeShort : '-'}
+                              </TableCell>
+                            </>
+                          )}
                           <TableCell className="text-slate-550 dark:text-slate-400 text-xs max-w-[200px] truncate" title={part.observacoes || ''}>
                             {part.observacoes || <span className="text-slate-300 dark:text-slate-800">-</span>}
                           </TableCell>

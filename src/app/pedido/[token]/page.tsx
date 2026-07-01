@@ -1080,9 +1080,13 @@ export default function PlanilhaColetaPage() {
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-28 text-center">Camisa</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-20 text-center">Qtd</TableHead>
                       
-                      {/* Tamanho Short - sempre visível */}
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-28 text-center">Short</TableHead>
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-20 text-center">Qtd</TableHead>
+                      {/* Tamanho Short - somente se conjunto */}
+                      {isConjunto && (
+                        <>
+                          <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-28 text-center">Short</TableHead>
+                          <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-20 text-center">Qtd</TableHead>
+                        </>
+                      )}
                       
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs min-w-[180px]">Observações</TableHead>
                       {!isLocked && <TableHead className="w-20"></TableHead>}
@@ -1091,7 +1095,7 @@ export default function PlanilhaColetaPage() {
                   <TableBody>
                     {rows.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={isLocked ? 9 : 11} className="py-20 text-center text-slate-400 text-sm">
+                        <TableCell colSpan={(isLocked ? 7 : 9) + (isConjunto ? 2 : 0)} className="py-20 text-center text-slate-400 text-sm">
                           <AlertCircle className="h-8 w-8 mx-auto mb-2 text-slate-300" />
                           Nenhum participante adicionado.
                         </TableCell>
@@ -1214,52 +1218,56 @@ export default function PlanilhaColetaPage() {
                             )}
                           </TableCell>
 
-                          {/* Tamanho Short - sempre visível */}
-                          <TableCell className="py-2 text-center">
-                            {isLocked ? (
-                              <span className="inline-block px-2.5 py-0.5 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 border border-sky-150 text-xs font-bold rounded-md">
-                                {row.tamanhoShort || '-'}
-                              </span>
-                            ) : (
-                              <Select
-                                value={row.tamanhoShort || ''}
-                                onValueChange={(val) => {
-                                  handleCellChange(row.id, 'tamanhoShort', val || '');
-                                  recalculateSummary();
-                                }}
-                              >
-                                <SelectTrigger className="h-9 border-slate-200 dark:border-slate-800 focus:ring-sky-500 bg-transparent rounded-lg text-sm font-medium">
-                                  <SelectValue placeholder="-" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg max-h-56 overflow-y-auto">
-                                  {TamanhosShortsValidos.map((size) => (
-                                    <SelectItem key={`short-${size}`} value={size} className="cursor-pointer text-sm">
-                                      {size}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            )}
-                          </TableCell>
+                          {/* Tamanho Short - somente se conjunto */}
+                          {isConjunto && (
+                            <>
+                              <TableCell className="py-2 text-center">
+                                {isLocked ? (
+                                  <span className="inline-block px-2.5 py-0.5 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 border border-sky-150 text-xs font-bold rounded-md">
+                                    {row.tamanhoShort || '-'}
+                                  </span>
+                                ) : (
+                                  <Select
+                                    value={row.tamanhoShort || ''}
+                                    onValueChange={(val) => {
+                                      handleCellChange(row.id, 'tamanhoShort', val || '');
+                                      recalculateSummary();
+                                    }}
+                                  >
+                                    <SelectTrigger className="h-9 border-slate-200 dark:border-slate-800 focus:ring-sky-500 bg-transparent rounded-lg text-sm font-medium">
+                                      <SelectValue placeholder="-" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg max-h-56 overflow-y-auto">
+                                      {TamanhosShortsValidos.map((size) => (
+                                        <SelectItem key={`short-${size}`} value={size} className="cursor-pointer text-sm">
+                                          {size}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                              </TableCell>
 
-                          {/* Qtd Short */}
-                          <TableCell className="py-2 text-center">
-                            {isLocked ? (
-                              <span className="font-bold text-slate-750 dark:text-slate-300">{row.quantidadeShort}</span>
-                            ) : (
-                              <Input
-                                type="number"
-                                min="0"
-                                value={row.quantidadeShort}
-                                onChange={(e) => {
-                                  const val = Math.max(0, parseInt(e.target.value) || 0);
-                                  handleCellChange(row.id, 'quantidadeShort', val);
-                                  recalculateSummary();
-                                }}
-                                className="h-9 w-16 text-center font-bold border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-transparent mx-auto"
-                              />
-                            )}
-                          </TableCell>
+                              {/* Qtd Short */}
+                              <TableCell className="py-2 text-center">
+                                {isLocked ? (
+                                  <span className="font-bold text-slate-750 dark:text-slate-300">{row.quantidadeShort}</span>
+                                ) : (
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    value={row.quantidadeShort}
+                                    onChange={(e) => {
+                                      const val = Math.max(0, parseInt(e.target.value) || 0);
+                                      handleCellChange(row.id, 'quantidadeShort', val);
+                                      recalculateSummary();
+                                    }}
+                                    className="h-9 w-16 text-center font-bold border-slate-200 dark:border-slate-800 rounded-lg text-sm bg-transparent mx-auto"
+                                  />
+                                )}
+                              </TableCell>
+                            </>
+                          )}
 
                           {/* Observações */}
                           <TableCell className="py-2">

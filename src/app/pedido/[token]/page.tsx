@@ -308,7 +308,7 @@ export default function PlanilhaColetaPage() {
       id: crypto.randomUUID(),
       nomeCompleto: row.nomeCompleto ? `${row.nomeCompleto} (Cópia)` : '',
       nomeCamisa: row.nomeCamisa ? `${row.nomeCamisa} COPIA` : '',
-      numero: '', // não duplicar número para evitar erros imediatos
+      numero: row.numero,
       tamanho: row.tamanho,
       tamanhoShort: row.tamanhoShort,
       quantidadeCamisa: row.quantidadeCamisa,
@@ -728,14 +728,6 @@ export default function PlanilhaColetaPage() {
     if (invalidRows.length > 0) {
       setSyncError('Não é possível finalizar. Existem erros ou dados incompletos na tabela.');
       setRows([...rows]);
-      return;
-    }
-
-    // Verificar duplicidade geral de números
-    const numerosList = rows.map(r => r.numero.trim()).filter(n => n !== '');
-    const hasDuplicates = numerosList.some((val, i) => numerosList.indexOf(val) !== i);
-    if (hasDuplicates) {
-      setSyncError('Não é possível finalizar. Existem números repetidos nas camisas.');
       return;
     }
 

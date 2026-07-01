@@ -696,10 +696,32 @@ export default function PedidoDetailPage() {
               <Button
                 onClick={handlePrintChecklist}
                 variant="outline"
-                className="rounded-xl border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-650 dark:text-slate-300 cursor-pointer flex-1 sm:flex-none font-bold"
+                className="rounded-xl border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-655 dark:text-slate-300 cursor-pointer flex-1 sm:flex-none font-bold"
               >
                 <Printer className="mr-2 h-4 w-4 text-indigo-500" /> Imprimir Checklist
               </Button>
+
+              {/* Botão Reabrir Coleta se Finalizado */}
+              {pedido.status === PedidoStatus.FINALIZADO && (
+                <Button
+                  onClick={handleReopenOrder}
+                  disabled={isReopening}
+                  variant="outline"
+                  className="rounded-xl border-amber-200 dark:border-amber-900/60 bg-amber-50/50 hover:bg-amber-100/50 dark:bg-amber-950/10 dark:hover:bg-amber-950/20 text-amber-700 dark:text-amber-400 cursor-pointer flex-1 sm:flex-none font-bold"
+                >
+                  {isReopening ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Reabrindo...
+                    </>
+                  ) : (
+                    <>
+                      <Unlock className="mr-2 h-4 w-4" />
+                      Reabrir Coleta
+                    </>
+                  )}
+                </Button>
+              )}
 
               {participantes.length > 0 && !isGrade && (
                 <>

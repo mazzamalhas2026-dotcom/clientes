@@ -66,6 +66,54 @@ interface LocalRow {
   };
 }
 
+const getProductTypeLabel = (tipo?: string) => {
+  switch (tipo) {
+    case 'APENAS_CAMISA': return 'Camisa';
+    case 'APENAS_CALCA': return 'Calça';
+    case 'APENAS_SHORT': return 'Short';
+    case 'APENAS_BERMUDA': return 'Bermuda';
+    case 'APENAS_AGASALHO': return 'Agasalho';
+    case 'CONJUNTO': return 'Camisa';
+    default: return 'Camisa';
+  }
+};
+
+const getProductDisplay = (tipo?: string) => {
+  switch (tipo) {
+    case 'APENAS_CAMISA': return 'Apenas Camisa';
+    case 'CONJUNTO': return 'Conjunto (Camisa + Short)';
+    case 'APENAS_CALCA': return 'Apenas Calça';
+    case 'APENAS_SHORT': return 'Apenas Short';
+    case 'APENAS_BERMUDA': return 'Apenas Bermuda';
+    case 'APENAS_AGASALHO': return 'Apenas Agasalho';
+    default: return tipo || '';
+  }
+};
+
+const getProductTypePluralSimple = (tipo?: string) => {
+  switch (tipo) {
+    case 'APENAS_CAMISA': return 'Camisas';
+    case 'APENAS_CALCA': return 'Calças';
+    case 'APENAS_SHORT': return 'Shorts';
+    case 'APENAS_BERMUDA': return 'Bermudas';
+    case 'APENAS_AGASALHO': return 'Agasalhos';
+    case 'CONJUNTO': return 'Camisas';
+    default: return 'Tamanhos';
+  }
+};
+
+const getProductTypePlural = (tipo?: string) => {
+  switch (tipo) {
+    case 'APENAS_CAMISA': return 'Camisas Consolidadas';
+    case 'APENAS_CALCA': return 'Calças Consolidadas';
+    case 'APENAS_SHORT': return 'Shorts Consolidados';
+    case 'APENAS_BERMUDA': return 'Bermudas Consolidadas';
+    case 'APENAS_AGASALHO': return 'Agasalhos Consolidados';
+    case 'CONJUNTO': return 'Camisas Consolidadas';
+    default: return 'Tamanhos Consolidados';
+  }
+};
+
 export default function PlanilhaColetaPage() {
   const { token } = useParams();
   
@@ -769,7 +817,7 @@ export default function PlanilhaColetaPage() {
                 Cliente: <strong className="text-indigo-600 dark:text-indigo-400">{pedido?.cliente?.nome}</strong>
               </p>
               <p className="text-xs text-slate-450 dark:text-slate-450">
-                Lote: {pedido?.descricao} ({isGrade ? 'Grade de Tamanhos' : 'Lista Nominal'} • {isConjunto ? 'Conjunto Camisa + Short' : 'Apenas Camisa'})
+                Lote: {pedido?.descricao} ({isGrade ? 'Grade de Tamanhos' : 'Lista Nominal'} • {getProductDisplay(pedido?.tipoProduto)})
               </p>
             </div>
 
@@ -796,9 +844,9 @@ export default function PlanilhaColetaPage() {
             <div>
               <span className="font-bold text-slate-800 dark:text-white text-xs">Instruções:</span>{' '}
               {isGrade ? (
-                <span>Insira a quantidade total de camisas {isConjunto ? 'e de shorts' : ''} desejada para cada tamanho na grade abaixo.</span>
+                <span>Insira a quantidade total de {getProductTypePluralSimple(pedido?.tipoProduto).toLowerCase()} {isConjunto ? 'e de shorts' : ''} desejada para cada tamanho na grade abaixo.</span>
               ) : (
-                <span>Insira o nome de cada pessoa, o nome para estampar na camisa, o número (se houver), e selecione o tamanho {isConjunto ? 'da camisa e do short' : ''}.</span>
+                <span>Insira o nome de cada pessoa, o nome para estampar na camisa, o número (se houver), e selecione o tamanho {isConjunto ? 'da camisa e do short' : 'da peça'}.</span>
               )}
               {isLocked ? (
                 <span className="block text-emerald-600 dark:text-emerald-400 font-bold mt-1 text-xs">Este formulário foi finalizado e está travado para a produção. Novas alterações não são permitidas.</span>
@@ -828,7 +876,7 @@ export default function PlanilhaColetaPage() {
               <Card className="md:col-span-3 bg-white dark:bg-slate-950 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl shadow-sm">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-bold text-slate-450 dark:text-slate-450 uppercase tracking-wider">
-                    {isConjunto ? 'Camisas Consolidadas' : 'Tamanhos Consolidados'}
+                    {getProductTypePlural(pedido?.tipoProduto)}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-3 sm:grid-cols-7 lg:grid-cols-10 gap-2">
@@ -1077,7 +1125,7 @@ export default function PlanilhaColetaPage() {
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-24 text-center">Número</TableHead>
                       
                       {/* Tamanhos da Camisa */}
-                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-28 text-center">Camisa</TableHead>
+                      <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-28 text-center">{getProductTypeLabel(pedido?.tipoProduto)}</TableHead>
                       <TableHead className="font-semibold text-slate-700 dark:text-slate-350 text-xs w-20 text-center">Qtd</TableHead>
                       
                       {/* Tamanho Short - somente se conjunto */}
@@ -1377,7 +1425,7 @@ export default function PlanilhaColetaPage() {
             {/* Resumo de Camisas */}
             <div className="space-y-2">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-450 block">
-                {isConjunto ? 'Camisas por Tamanho' : 'Tamanhos Solicitados'}
+                {isConjunto ? 'Camisas por Tamanho' : `${getProductTypePluralSimple(pedido?.tipoProduto)} por Tamanho`}
               </span>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {resumo?.totalPorTamanho

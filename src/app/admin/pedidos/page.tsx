@@ -317,7 +317,13 @@ export default function PedidosPage() {
                       </TableCell>
                       <TableCell className="text-center text-xs text-slate-500 font-semibold uppercase">
                         <div>{pedido.tipoColeta === 'GRADE' ? 'Grade' : 'Nominal'}</div>
-                        <div className="text-[10px] text-slate-400 font-normal">({pedido.tipoProduto === 'CONJUNTO' ? 'Conjunto' : 'Camisa'})</div>
+                        <div className="text-[10px] text-slate-400 font-normal">
+                          ({pedido.tipoProduto === 'CONJUNTO' ? 'Conjunto' : 
+                            pedido.tipoProduto === 'APENAS_CALCA' ? 'Calça' :
+                            pedido.tipoProduto === 'APENAS_SHORT' ? 'Short' :
+                            pedido.tipoProduto === 'APENAS_BERMUDA' ? 'Bermuda' :
+                            pedido.tipoProduto === 'APENAS_AGASALHO' ? 'Agasalho' : 'Camisa'})
+                        </div>
                       </TableCell>
                       <TableCell className="text-center font-bold text-slate-700 dark:text-slate-200">
                         {pedido.quantidadePrevista}
@@ -487,6 +493,10 @@ export default function PedidosPage() {
                   <SelectContent className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg">
                     <SelectItem value="APENAS_CAMISA" className="cursor-pointer">Apenas Camisa</SelectItem>
                     <SelectItem value="CONJUNTO" className="cursor-pointer">Conjunto (Camisa + Short)</SelectItem>
+                    <SelectItem value="APENAS_CALCA" className="cursor-pointer">Apenas Calça</SelectItem>
+                    <SelectItem value="APENAS_SHORT" className="cursor-pointer">Apenas Short</SelectItem>
+                    <SelectItem value="APENAS_BERMUDA" className="cursor-pointer">Apenas Bermuda</SelectItem>
+                    <SelectItem value="APENAS_AGASALHO" className="cursor-pointer">Apenas Agasalho</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

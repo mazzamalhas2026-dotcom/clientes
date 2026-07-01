@@ -28,17 +28,6 @@ export class ColetaService {
       await this.checkOrderLock(validatedData.pedidoId);
     }
 
-    // Validar número duplicado
-    if (validatedData.numero) {
-      const isDuplicate = await this.repository.findDuplicateNumber(
-        validatedData.pedidoId,
-        validatedData.numero
-      );
-      if (isDuplicate) {
-        throw new Error(`O número "${validatedData.numero}" já está cadastrado neste pedido.`);
-      }
-    }
-
     // Se o pedido estava "AGUARDANDO_PREENCHIMENTO", atualizar para "EM_PREENCHIMENTO"
     const pedido = await this.pedidoRepository.findById(validatedData.pedidoId);
     if (pedido && pedido.status === 'AGUARDANDO_PREENCHIMENTO') {
@@ -58,18 +47,6 @@ export class ColetaService {
     
     if (!bypassLock) {
       await this.checkOrderLock(existing.pedidoId);
-    }
-
-    // Validar número duplicado (excluindo ele mesmo)
-    if (validatedData.numero) {
-      const isDuplicate = await this.repository.findDuplicateNumber(
-        existing.pedidoId,
-        validatedData.numero,
-        id
-      );
-      if (isDuplicate) {
-        throw new Error(`O número "${validatedData.numero}" já está cadastrado neste pedido.`);
-      }
     }
 
     return this.repository.update(id, validatedData);

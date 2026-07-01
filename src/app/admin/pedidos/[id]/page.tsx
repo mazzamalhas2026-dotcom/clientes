@@ -50,6 +50,42 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ParticipanteSchema, ParticipanteInput, Participante, TamanhosValidos, TamanhosShortsValidos, ResumoPedido } from '@/features/coleta/types';
 import { Pedido, PedidoStatus } from '@/features/pedidos/types';
 
+const getProductTypeLabel = (tipo?: string) => {
+  switch (tipo) {
+    case 'APENAS_CAMISA': return 'Camisa';
+    case 'APENAS_CALCA': return 'Calça';
+    case 'APENAS_SHORT': return 'Short';
+    case 'APENAS_BERMUDA': return 'Bermuda';
+    case 'APENAS_AGASALHO': return 'Agasalho';
+    case 'CONJUNTO': return 'Camisa';
+    default: return 'Camisa';
+  }
+};
+
+const getProductDisplay = (tipo?: string) => {
+  switch (tipo) {
+    case 'APENAS_CAMISA': return 'Apenas Camisa';
+    case 'CONJUNTO': return 'Conjunto (Camisa + Short)';
+    case 'APENAS_CALCA': return 'Apenas Calça';
+    case 'APENAS_SHORT': return 'Apenas Short';
+    case 'APENAS_BERMUDA': return 'Apenas Bermuda';
+    case 'APENAS_AGASALHO': return 'Apenas Agasalho';
+    default: return tipo || '';
+  }
+};
+
+const getProductTypePluralSimple = (tipo?: string) => {
+  switch (tipo) {
+    case 'APENAS_CAMISA': return 'Camisas';
+    case 'APENAS_CALCA': return 'Calças';
+    case 'APENAS_SHORT': return 'Shorts';
+    case 'APENAS_BERMUDA': return 'Bermudas';
+    case 'APENAS_AGASALHO': return 'Agasalhos';
+    case 'CONJUNTO': return 'Camisas';
+    default: return 'Tamanhos';
+  }
+};
+
 export default function PedidoDetailPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -478,7 +514,7 @@ export default function PedidoDetailPage() {
           <div>•</div>
           <div>Grade: {isGrade ? 'Simplificada (Sem Nomes)' : 'Lista Nominal'}</div>
           <div>•</div>
-          <div>Modelo: {isConj ? 'Conjunto (Camisa + Short)' : 'Apenas Camisa'}</div>
+          <div>Modelo: {getProductDisplay(pedido.tipoProduto)}</div>
         </div>
 
         {/* Resumo de tamanhos - sempre visível no checklist */}
@@ -493,7 +529,7 @@ export default function PedidoDetailPage() {
           return (
             <div className={`grid gap-6 mt-2 ${hasShortsData ? 'grid-cols-2' : 'grid-cols-1'}`}>
               <div>
-                <h3 className="font-extrabold text-xs mb-2 border-b border-black pb-1">RESUMO POR TAMANHO — CAMISAS</h3>
+                <h3 className="font-extrabold text-xs mb-2 border-b border-black pb-1">RESUMO POR TAMANHO — {getProductTypePluralSimple(pedido.tipoProduto).toUpperCase()}</h3>
                 <table className="w-full border-collapse border border-black text-xs">
                   <thead>
                     <tr className="bg-gray-100">
@@ -620,8 +656,8 @@ export default function PedidoDetailPage() {
                 <th className="border border-black p-1 text-left">Nome Completo</th>
                 <th className="border border-black p-1 text-left">Nome Estampado</th>
                 <th className="border border-black p-1 text-center w-10">Nº</th>
-                <th className="border border-black p-1 text-center w-14">Camisa</th>
-                <th className="border border-black p-1 text-center w-14">Short</th>
+                <th className="border border-black p-1 text-center w-14">{getProductTypeLabel(pedido.tipoProduto)}</th>
+                {isConj && <th className="border border-black p-1 text-center w-14">Short</th>}
                 <th className="border border-black p-1 text-left">Observações</th>
                 <th className="border border-black p-1 text-center w-12">Costura</th>
                 <th className="border border-black p-1 text-center w-12">Silk/Subl.</th>
@@ -638,9 +674,11 @@ export default function PedidoDetailPage() {
                   <td className="border border-black p-1 text-center font-extrabold uppercase">
                     {p.tamanho} {p.quantidadeCamisa > 1 ? `(x${p.quantidadeCamisa})` : ''}
                   </td>
-                  <td className="border border-black p-1 text-center font-extrabold uppercase">
-                    {p.tamanhoShort ? `${p.tamanhoShort} ${p.quantidadeShort > 1 ? `(x${p.quantidadeShort})` : ''}` : '-'}
-                  </td>
+                  {isConj && (
+                    <td className="border border-black p-1 text-center font-extrabold uppercase">
+                      {p.tamanhoShort ? `${p.tamanhoShort} ${p.quantidadeShort > 1 ? `(x${p.quantidadeShort})` : ''}` : '-'}
+                    </td>
+                  )}
                   <td className="border border-black p-1 text-[9px] truncate max-w-[150px]">{p.observacoes || '-'}</td>
                   <td className="border border-black p-1 text-center">[ ]</td>
                   <td className="border border-black p-1 text-center">[ ]</td>
@@ -686,7 +724,7 @@ export default function PedidoDetailPage() {
                 Cliente: <span className="text-indigo-600 dark:text-indigo-400">{pedido.cliente?.nome}</span> ({pedido.cliente?.responsavel})
               </p>
               <p className="text-xs text-slate-450 dark:text-slate-505 flex items-center gap-1.5 mt-1">
-                <Calendar className="h-3 w-3" /> Cadastrado em {new Date(pedido.createdAt).toLocaleDateString('pt-BR')} • {isGrade ? 'Grade de Tamanhos' : 'Lista Nominal'} • {isConj ? 'Conjunto' : 'Apenas Camisa'}
+                <Calendar className="h-3 w-3" /> Cadastrado em {new Date(pedido.createdAt).toLocaleDateString('pt-BR')} • {isGrade ? 'Grade de Tamanhos' : 'Lista Nominal'} • {getProductDisplay(pedido.tipoProduto)}
               </p>
             </div>
 
@@ -824,7 +862,7 @@ export default function PedidoDetailPage() {
             <Card className="md:col-span-2 border border-slate-200/50 dark:border-slate-800/50 bg-white dark:bg-slate-950 shadow-sm rounded-2xl overflow-hidden transition-colors duration-300">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold text-slate-450 dark:text-slate-450 uppercase tracking-wider">
-                  {isConj ? 'Camisas por Tamanho' : 'Tamanhos Consolidados'}
+                  {isConj ? 'Camisas por Tamanho' : `${getProductTypePluralSimple(pedido.tipoProduto)} por Tamanho`}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -1039,7 +1077,7 @@ export default function PedidoDetailPage() {
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs">Nome Completo</TableHead>
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs">Nome na Camisa</TableHead>
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center">Número</TableHead>
-                        <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center">Camisa</TableHead>
+                        <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center">{getProductTypeLabel(pedido.tipoProduto)}</TableHead>
                         <TableHead className="font-semibold text-slate-755 dark:text-slate-350 text-xs text-center w-16">Qtd</TableHead>
                         {isConj && (
                           <>
@@ -1179,7 +1217,7 @@ export default function PedidoDetailPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="tamanho" className="text-slate-700 dark:text-slate-350">Camisa *</Label>
+                <Label htmlFor="tamanho" className="text-slate-700 dark:text-slate-350">{getProductTypeLabel(pedido?.tipoProduto)} *</Label>
                 <Select
                   value={watchTamanho || 'M'}
                   onValueChange={(val) => setValue('tamanho', val as any)}
@@ -1202,7 +1240,7 @@ export default function PedidoDetailPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="quantidadeCamisa" className="text-slate-700 dark:text-slate-350">Qtd Camisa</Label>
+                <Label htmlFor="quantidadeCamisa" className="text-slate-700 dark:text-slate-350">Qtd {getProductTypeLabel(pedido?.tipoProduto)}</Label>
                 <Input
                   id="quantidadeCamisa"
                   type="number"
